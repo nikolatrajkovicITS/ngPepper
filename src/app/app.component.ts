@@ -1,5 +1,5 @@
-import { Component } from '@angular/core';
-import { AngularFire } from 'angularfire2';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { AngularFire, FirebaseListObservable } from 'angularfire2';
 
 @Component({
   selector: 'app-root',
@@ -8,13 +8,40 @@ import { AngularFire } from 'angularfire2';
 })
 export class AppComponent {
   title = 'app';
-  cuisines = ['c1', 'c2', 'c3'];
+  cuisines = FirebaseListObservable<any[]>;
+  restaurant;
 
-  constructor(af: AngularFire) {
-    af.database.list('cuisines').subscribe(x => {                // this list return an obsrv, we can subscribe on it
-      this.cuisines = x;
-      console.log(this.cuisines);
-    })               
+  constructor(private af: AngularFire) {  
+  }
+
+  ngOnInit() {
+    this.cuisines = this.af.database.list('/cuisines');
+    this.restaurant = this.af.database.object('/restaurant');           
+  }
+
+  add() {
+    this.cuisines.push({
+      name: 'Asian',
+      details: {
+        description: '...'
+      }
+    });
+  }
+
+  update() {
+    this.af.database.object('/restaurant').update({
+      name: 'New Name',
+      rating: 5
+    })
+  }
+
+  set() {   
+    this.af.database.object('/restaurant').set(null);   // We can set "null" prop and that will remove that object.
+  }
+
+  remove() {
+    this.af.database.object('/restaurant').remove()
+      .then(x => console.log("SUCCESS"))
+      .catch(error => console.log('ERROR', error));
   }
 }
-sssssssssssssssss
